@@ -1,4 +1,5 @@
 import { content, footer, nav, products } from "./components.js";
+import { Products } from "./products.js";
 
 nav();
 footer();
@@ -8,7 +9,28 @@ const signForm = document.getElementById('cardForm');
 let isLogged = localStorage.getItem('CURRENT_USER');
 const signLink = document.getElementById('signLink');
 const bgForm = document.getElementById('bg');
-const closeForm = document.getElementById('closeForm')
+const closeForm = document.getElementById('closeForm');
+const cartsListString = localStorage.getItem('CARTS_LIST');
+let cartsList;
+if(!cartsListString){
+    cartsList = [];
+    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList))
+}else{
+    cartsList = JSON.parse(cartsListString);
+}
+
+const initCart = () => {
+    let cart;
+    if(isLogged){
+        const cartExists = cartsList.filter(cart => cart.user = getCurrentUser());
+        cart = cartExists ? cartExists[0] : {products: [],user: getCurrentUser()};
+    }else{
+        cart = {products: [],user: null};
+    }
+    currentCart = cart;
+}
+let currentCart;
+
 
 const setSignLink = () => {
     if(isLogged){
@@ -30,7 +52,7 @@ const toggleCardForm = (id) => {
         bgForm.style.opacity = '100';
     }else if(id == 'bg' || id == 'closeForm'){
         signForm.className = 'hideForm';
-        bgForm.style.zIndex = '0';
+        bgForm.style.zIndex = '-10';
         bgForm.style.opacity = '0';
     }
 }
@@ -115,9 +137,10 @@ login.onclick = () => {
             if(user.email == email && user.password == password){
                 logUser(user);
                 setSignLink();
-                userIsValid = true
+                userIsValid = true;
                 successLog(user);
                 clearForm(form);
+                initCart();
                 break;
             }
         }
@@ -170,13 +193,30 @@ const toast = (msg) => {
 
 const getCurrentUser = () => {
     const userString = localStorage.getItem('CURRENT_USER');
-    const user = JSON.parse(userString);
-    return user
+    if(userString){
+        const user = JSON.parse(userString);
+        return user
+    }else{
+        return null
+    }
+    
 }
 const getUsers = () => {
     const usersString = localStorage.getItem('USERS_REGISTERED');
     const users = JSON.parse(usersString);
     if(users) return users
     return []
+}
+//CARRITO
+const addBtns = document.getElementsByClassName('add');
+for (const btn of addBtns) {
+    console.log(btn)
+    btn.onclick = () => {
+        updateCart(id)
+    }
+}
+
+const updateCart = (id) => {
+    cart.products.push(id);
 }
 

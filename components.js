@@ -63,7 +63,7 @@ const infoProduct = (product) => {
         infoHTML.innerHTML = `
             <div class="inline space">
                 <h4>${product.name}</h4>
-                <button class="btn-solid"><i class="fa-solid fa-cart-shopping"></i></button>
+                <button class="btn-solid add" id=${product.id}>+</button>
                 </div>
                 <p>${product.price} €</p>
             </div>
@@ -94,5 +94,4 @@ export const products = () => {
         productHTML.appendChild(infoHTML);
         shelf.appendChild(productHTML)
     });
-    
 }
