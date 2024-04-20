@@ -237,7 +237,7 @@ footer p{
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    transition: all 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out;
 }
 #cardForm{
     z-index: 10;
@@ -281,8 +281,6 @@ form h2{
     position: fixed;
     bottom: 10vh;
     left: 50%;
-    background-color: lightgreen;
-    color: red;
     width: 80vw;
     max-width: 360px;
     height: 40px;
@@ -291,6 +289,16 @@ form h2{
     align-content: center;
     transform:  translate(-50%, 50%);
     z-index: 15;
+}
+.error{
+    border: 1px solid fuchsia;
+    background-color: black;
+    color: fuchsia;
+}
+.success{
+    border: 1px solid black;
+    background-color: fuchsia;
+    color: black;
 }
 
 /* DESKTOP */

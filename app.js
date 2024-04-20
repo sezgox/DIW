@@ -1,5 +1,4 @@
 import { content, footer, nav, products } from "./components.js";
-import { Products } from "./products.js";
 
 nav();
 footer();
@@ -10,27 +9,49 @@ let isLogged = localStorage.getItem('CURRENT_USER');
 const signLink = document.getElementById('signLink');
 const bgForm = document.getElementById('bg');
 const closeForm = document.getElementById('closeForm');
+
+const getCurrentUser = () => {
+    const userString = localStorage.getItem('CURRENT_USER');
+    if(userString){
+        const user = JSON.parse(userString);
+        return user
+    }else{
+        return null
+    }
+}
+
+//SET CARTS_LIST FOR FIRST TIME...
 const cartsListString = localStorage.getItem('CARTS_LIST');
 let cartsList;
 if(!cartsListString){
     cartsList = [];
-    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList))
+    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
 }else{
     cartsList = JSON.parse(cartsListString);
 }
 
+let currentCart;
+//SET currentCart TO THE CART OF THE USER LOGGED IN
 const initCart = () => {
     let cart;
     if(isLogged){
-        const cartExists = cartsList.filter(cart => cart.user = getCurrentUser());
-        cart = cartExists ? cartExists[0] : {products: [],user: getCurrentUser()};
+        const user = getCurrentUser();
+        const email = user.email;
+        const cartExists = cartsList.filter(cart => cart.user == email);
+        if(cartExists.length>0){
+            cart = cartExists[0];
+        }else{
+            cart = {products: [],user: email};
+            cartsList.push(cart);
+            localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
+        }
     }else{
         cart = {products: [],user: null};
     }
     currentCart = cart;
+    console.log(currentCart);
 }
-let currentCart;
-
+initCart();
 
 const setSignLink = () => {
     if(isLogged){
@@ -88,10 +109,7 @@ register.onclick = () => {
     const name = form.firstName.value.concat(` ${form.lastName.value}`);
     const isValid = validForm(email,password,confirmPassword,name);
     let exists;
-    if(!isValid){
-        //TODO: CAMPOS INVALIDOS...
-        console.log('YOU MUST FILL UP THE FIELDS CORRECTLY')
-    }else{
+    if(isValid){
         let users = getUsers();
         exists = userExists(users,email);
         if(exists){
@@ -101,7 +119,7 @@ register.onclick = () => {
             users.push(user);
             const usersString = JSON.stringify(users);
             localStorage.setItem('USERS_REGISTERED',usersString);
-            toast('User registered. You can sign in now!');
+            toast('User registered. You can sign in now!','success');
             clearForm(form);
         }
     }
@@ -136,20 +154,14 @@ login.onclick = () => {
         for (const user of users) {
             if(user.email == email && user.password == password){
                 logUser(user);
-                setSignLink();
-                userIsValid = true;
-                successLog(user);
                 clearForm(form);
-                initCart();
+                userIsValid = true;
                 break;
             }
         }
         if(!userIsValid){
             toast('Email or password incorrect')
-            console.log('Email o contraseña incorrectas')
         }
-    }else{
-       //TODO: CAMPOS INVALIDOS...
     }
 }
 
@@ -157,50 +169,50 @@ const logUser = (user) => {
     isLogged = true;
     const userString = JSON.stringify(user);
     localStorage.setItem('CURRENT_USER',userString);
+    toggleCardForm('closeForm');
+    setSignLink();
+    initCart();
+    toast(`Welcome ${user.name}!`,'success');
 }
 
-//PARA MOSTRAR MENSAJES DE ERROR...
 const validForm = (email,password,confirmPassword = password,name = 'default') => {
-    //TODO: AGREGAR LOGICA PARA MANEJAR CUANDO NO SEA VALIDO EL FORMULARIO
+    if(!email || !password || !name){
+        toast("You must fill up all the fields correctly")
+        return false
+    }
+    if(password != confirmPassword) {
+        toast("Passwords doesn't match");
+        return false
+    }
+    if(password.length < 8 && name != 'default'){
+        toast("Passwords must have at least 8 characters")
+        return false
+    }
     return true
 }
+
 
 const logout = () => {
     const user = getCurrentUser();
     localStorage.removeItem('CURRENT_USER');
     isLogged = false;
     setSignLink();
-    toast(`See you later ${user.name}`);
+    initCart();
+    toast(`See you later ${user.name}`,'success');
 }
-
-const successLog = (user) => {
-    toggleCardForm('closeForm');
-    toast(`Welcome ${user.name}!`);
-}
-
-const toast = (msg) => {
+const toast = (msg,type = 'error') => {
     console.log(msg)
     const container = document.createElement('div');
     container.innerHTML = msg;
-    container.className = 'toast';
+    container.className = `toast ${type}`;
     container.id = 'toast';
     content.appendChild(container);
     setTimeout(() => {
         content.removeChild(document.getElementById('toast'));
-    },2000).th
-    
+    },2000)
 }
 
-const getCurrentUser = () => {
-    const userString = localStorage.getItem('CURRENT_USER');
-    if(userString){
-        const user = JSON.parse(userString);
-        return user
-    }else{
-        return null
-    }
-    
-}
+
 const getUsers = () => {
     const usersString = localStorage.getItem('USERS_REGISTERED');
     const users = JSON.parse(usersString);
@@ -210,13 +222,35 @@ const getUsers = () => {
 //CARRITO
 const addBtns = document.getElementsByClassName('add');
 for (const btn of addBtns) {
-    console.log(btn)
     btn.onclick = () => {
-        updateCart(id)
+        const productId = btn.attributes['idref'].value
+        updateCart(productId)
     }
 }
 
 const updateCart = (id) => {
-    cart.products.push(id);
+    if(currentCart.user != null){
+        currentCart.products.push(id);
+        updateCartsList(currentCart);
+    }else{
+        toast('You must sign in first!');
+        toggleCardForm('notLogged');
+    }
+}
+const updateCartsList = (cart) => {
+    let updatedCartList =  cartsList.map(cart => {
+        if(cart.user == currentCart.user){
+            return currentCart;
+        }else{
+            return cart;
+        }
+    });
+    cartsList = updatedCartList;
+    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
 }
 
+//TODO: AGREGAR ASTERISCO EN CAMPOS OBLIGATORIOS DE REGISTER...
+//TODO: ESTILAR FORM
+//TODO: PINTAR EL CARRO...
+//TODO: ESTILAR CARRO, SECCIONES, ETC...
+//TODO: AGREGAR ICONITO VER PASSWORD

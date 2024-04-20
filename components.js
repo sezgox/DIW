@@ -63,7 +63,7 @@ const infoProduct = (product) => {
         infoHTML.innerHTML = `
             <div class="inline space">
                 <h4>${product.name}</h4>
-                <button class="btn-solid add" id=${product.id}>+</button>
+                <button class="btn-solid add" idref=${product.id}>+</button>
                 </div>
                 <p>${product.price} €</p>
             </div>
@@ -88,6 +88,7 @@ export const products = () => {
     products.forEach(product => {
         const productHTML = document.createElement('article');
         productHTML.className = 'box product';
+        productHTML.id = product.id;
         const imageHTML = imageDescription(product);
         const infoHTML = infoProduct(product)
         productHTML.appendChild(imageHTML);
