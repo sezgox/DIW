@@ -1,4 +1,6 @@
+import { Cart } from "./cart.js";
 import { content, footer, nav, products } from "./components.js";
+import { Products } from "./products.js";
 
 nav();
 footer();
@@ -20,38 +22,6 @@ const getCurrentUser = () => {
     }
 }
 
-//SET CARTS_LIST FOR FIRST TIME...
-const cartsListString = localStorage.getItem('CARTS_LIST');
-let cartsList;
-if(!cartsListString){
-    cartsList = [];
-    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
-}else{
-    cartsList = JSON.parse(cartsListString);
-}
-
-let currentCart;
-//SET currentCart TO THE CART OF THE USER LOGGED IN
-const initCart = () => {
-    let cart;
-    if(isLogged){
-        const user = getCurrentUser();
-        const email = user.email;
-        const cartExists = cartsList.filter(cart => cart.user == email);
-        if(cartExists.length>0){
-            cart = cartExists[0];
-        }else{
-            cart = {products: [],user: email};
-            cartsList.push(cart);
-            localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
-        }
-    }else{
-        cart = {products: [],user: null};
-    }
-    currentCart = cart;
-    console.log(currentCart);
-}
-initCart();
 
 const setSignLink = () => {
     if(isLogged){
@@ -220,24 +190,59 @@ const getUsers = () => {
     return []
 }
 //CARRITO
+const cart = document.getElementById('cart');
+//SET CARTS_LIST FOR FIRST TIME...
+const cartsListString = localStorage.getItem('CARTS_LIST');
+let cartsList;
+if(!cartsListString){
+    cartsList = [];
+    localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
+}else{
+    cartsList = JSON.parse(cartsListString);
+}
+
+let currentCart;
+//SET currentCart TO THE CART OF THE USER LOGGED IN
+const initCart = () => {
+    let cart;
+    if(isLogged){
+        const user = getCurrentUser();
+        const email = user.email;
+        const cartExists = cartsList.filter(cart => cart.user == email);
+        if(cartExists.length>0){
+            cart = cartExists[0];
+        }else{
+            cart = {products: [],user: email};
+            cartsList.push(cart);
+            localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
+        }
+    }else{
+        cart = {products: [],user: null};
+    }
+    clearCart();
+    currentCart = new Cart(cart);
+    getTotalPrice();
+    for(const product of currentCart.products){
+        renderCart(product);
+    }
+}
+initCart();
+
 const addBtns = document.getElementsByClassName('add');
 for (const btn of addBtns) {
     btn.onclick = () => {
         const productId = btn.attributes['idref'].value
-        updateCart(productId)
+        const itemAdded = currentCart.addItem(productId);
+        if(!itemAdded){
+            toast('You must sign in first!');
+            toggleCardForm('notLogged');
+        }else{
+            renderCart(productId);
+            updateCartsList();
+        }
     }
 }
-
-const updateCart = (id) => {
-    if(currentCart.user != null){
-        currentCart.products.push(id);
-        updateCartsList(currentCart);
-    }else{
-        toast('You must sign in first!');
-        toggleCardForm('notLogged');
-    }
-}
-const updateCartsList = (cart) => {
+function updateCartsList(){
     let updatedCartList =  cartsList.map(cart => {
         if(cart.user == currentCart.user){
             return currentCart;
@@ -247,10 +252,119 @@ const updateCartsList = (cart) => {
     });
     cartsList = updatedCartList;
     localStorage.setItem('CARTS_LIST',JSON.stringify(cartsList));
+    getTotalPrice();
 }
 
+function updateBtns(){
+    const removeAllBtns = document.getElementsByClassName('removeAll');
+    const removeOneBtns = document.getElementsByClassName('removeOne');
+    const addOneBtns = document.getElementsByClassName('addOne');
+    for(const btn of removeAllBtns){
+        btn.onclick = () => {
+            const productId = btn.attributes['idref'].value
+            currentCart.removeAllItemsById(productId);
+            removeAllItemsById(productId);
+        }
+    }
+    for(const btn of removeOneBtns){
+        btn.onclick = () => {
+            const productId = btn.attributes['idref'].value
+            currentCart.removeItem(productId);
+            renderCart(productId,'remove');
+        }
+    }
+    for(const btn of addOneBtns){
+        btn.onclick = () => {
+            const productId = btn.attributes['idref'].value
+            currentCart.addItem(productId);
+            renderCart(productId);
+        }
+    }
+}
+
+function removeAllItemsById(id){
+    const product = Products.filter(product => product.id == id)[0];
+    let productHTML;
+    for(const title of document.getElementsByClassName('title')){
+        if(title.innerHTML == product.name){
+            productHTML = title.parentElement;
+            productHTML.remove();
+        }
+    }
+    updateCartsList();
+}
+
+function renderCart(id,cartAction = 'add'){
+    const product = Products.filter(product => product.id == id)[0];
+    try {
+        let titleHTML;
+        for(const title of document.getElementsByClassName('title')){
+            if(title.innerHTML == product.name){
+                titleHTML = title;
+            }
+        }
+        const unitsHTML = titleHTML.previousElementSibling;
+        const priceHTML = titleHTML.nextElementSibling;
+        let units;
+        if(cartAction == 'add'){
+            units = Number(unitsHTML.innerHTML.slice(1)) + 1;
+        }else if(cartAction == 'remove'){
+            units = Number(unitsHTML.innerHTML.slice(1)) - 1;
+            if(units == 0){
+                removeAllItemsById(id);
+            }
+        }
+        unitsHTML.innerHTML =`x${units}`;
+        const price = (Number(product.price)*units).toFixed(2);
+        priceHTML.innerHTML = `${price} €`;
+    } catch (error) {
+        const productHTML = document.createElement('div');
+        productHTML.className = 'inline space item';
+        productHTML.innerHTML = `
+            <p>x1</p>
+            <h5 class="title">${product.name}</h5>
+            <p class="price">${product.price} €</p>
+            
+            <button class="small removeOne" idref="${product.id}"><i class="fa-solid fa-minus"></i></button>
+            <button class="small addOne" idref="${product.id}"><i class="fa-solid fa-plus"></i></button>
+            <button class="small removeAll" idref="${product.id}"><i class="fa-solid fa-xmark"></i></button>
+        `;
+        cart.appendChild(productHTML);
+        updateBtns();
+    }
+    updateCartsList();
+}
+
+function getTotalPrice(){
+    const total = document.getElementById('total');
+    let totalPrice = (0.00);
+    for(const item of currentCart.products){
+        const price = (Number(Products.filter(product => product.id == item)[0].price))
+        totalPrice += price;
+    }
+    totalPrice = totalPrice.toFixed(2);
+    total.innerHTML = `${totalPrice} €`;
+}
+
+const empty = document.getElementById('empty');
+empty.onclick = () =>{
+    clearCart();
+    currentCart.removeAll();
+    updateCartsList();
+}
+
+function clearCart(){
+    const productsHTML = Array.from(document.getElementsByClassName('inline space item'));
+    for(const productHTML of productsHTML){
+        productHTML.remove();
+    }
+}
+
+
+
+
 //TODO: AGREGAR ASTERISCO EN CAMPOS OBLIGATORIOS DE REGISTER...
-//TODO: ESTILAR FORM
-//TODO: PINTAR EL CARRO...
-//TODO: ESTILAR CARRO, SECCIONES, ETC...
+//TODO: ESTILAR FORM...
+//TODO: ESTILAR EL CARRO...
+//TODO: ESTILAR SECCIONES...
 //TODO: AGREGAR ICONITO VER PASSWORD

@@ -63,7 +63,7 @@ const infoProduct = (product) => {
         infoHTML.innerHTML = `
             <div class="inline space">
                 <h4>${product.name}</h4>
-                <button class="btn-solid add" idref=${product.id}>+</button>
+                <button class="small add" idref=${product.id}><i class="fa-solid fa-plus"></i></button>
                 </div>
                 <p>${product.price} €</p>
             </div>
