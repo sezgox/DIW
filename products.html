@@ -1,24 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Toys X Us</title>
-    <link rel="icon" type="image/x-icon" href="./assets/images.png">
-    <link rel="stylesheet" href="./css/styles.css">
-    <script src="https://kit.fontawesome.com/3ce4b05985.js" crossorigin="anonymous"></script>
-    <script type="module" src="./scripts/products.js"></script>
-    <script type="module" src="./scripts/components.js"></script>
-    <script type="module" src="./scripts/index.js"></script>
-</head>
-
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Toys X Us</title>
+        <link rel="icon" type="image/x-icon" href="/assets/images.png">
+        <link rel="stylesheet" href="../css/styles.css">
+        <script src="https://kit.fontawesome.com/3ce4b05985.js" crossorigin="anonymous"></script>
+        <script type="module" src="./scripts/products.js"></script>
+        <script type="module" src="./scripts/components.js"></script>
+        <script type="module" src="./scripts/pr.js"></script>
+    </head>
+    
 <body>
-   
     <div id="content">
         <div id="cart">
             <div class="box">
-                <div class="inline" st>
-                    <button id="closeCart" class="btn-sim"><i class="fa-solid fa-right-long" style="color: var(--tertiary);margin-bottom: 2px;"></i></button>
+                <div class="inline">
+                    <button id="closeCart" class="btn-sim"><i class="fa-solid fa-right-long" style="color: #fff;"></i></button>
                     <h4 style="margin-left: auto;">Cart</h4>
                 </div>
                 <div><hr></div>
@@ -32,17 +31,16 @@
                 </div>
                 <div class="inline buttons">
                     <button class="btn primary"  style="width: 100%;">CHECKOUT</button>
-                    <button class="btn clear" style="width: 100%;">VIEW CART</button>
+                    <button class="btn tertiary" style="width: 100%;">VIEW CART</button>
 
-                    <button class="btn tertiary" style="width: 100%;" id="empty">EMPTY</button>
+                    <button class="btn clear" style="width: 100%;" id="empty">EMPTY</button>
                 </div>
             </div>
         </div>
-        
         <div id="bg" class="bg">
             <div id="cardForm">
 
-                <button id="closeForm" style="background-color: transparent; cursor: pointer; border: none; outline: none;"><i class="fa-solid fa-xmark"></i></button>
+                <button id="closeForm" class="btn-sim"><i class="fa-solid fa-xmark"></i></button>
 
                 <form name="login">
                     <fieldset>
@@ -102,7 +100,7 @@
                         <div class="box">
                             <label for="regPassword">Password</label>
                             <div class="input">
-                                <input type="password" name="regPassword" placeholder="Password" id="regPassword"  minlength="8" required>
+                                <input type="password" name="regPassword" placeholder="Password" id="regPassword" minlength="8" required>
                                 <i class="fa-regular fa-eye" id="showRegPass"></i>
                             </div>
                         </div>
@@ -119,27 +117,9 @@
 
             </div>
         </div>
-
-    <header>
-        
-        <div class="box fixed">
-            <img src="./assets/images.png" alt="Toys X Us">
-            <p>Play. Experiment. Enjoy.</p>
-            <h1>Toys X Us</h1>
-        </div>
-    </header>
         <main>
-            <h2>Top Sellers</h2>
-            <div class="inline nav-products">
-                <div id="filters" style="margin: 8px; display: flex; gap: 8px;">
-                    <button id="all" class="btn primary btn-active">All</button>
-                    <button id="anal" class="btn primary">Anal</button>
-                    <button id="vaginal" class="btn primary">Vaginal</button>
-                    <button id="couple" class="btn primary">For couples</button>
-                </div>
-            </div>
             <section id="products"></section>
         </main>
     </div>
-
 </body>
+</html>
